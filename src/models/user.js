@@ -1,29 +1,27 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
+const userShema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    minlength: 2,
+    minLength: 2,
   },
-
   surname: {
     type: String,
     required: true,
-    minlength: 2,
+    minLength: 2,
   },
-
   username: {
     type: String,
     required: true,
-    minlength: 5,
+    minLength: 5,
   },
-
-  books: {
+  borrowedBooks: {
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: "book" }],
     default: [],
   },
 });
 
-module.exports = mongoose.model("user", userSchema);
+module.exports = mongoose.model("user", userShema);
+
 

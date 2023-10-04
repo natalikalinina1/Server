@@ -1,60 +1,46 @@
 const User = require("../models/user");
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((user) => {
-      return res.status(200).send(user);
+const getUsers = (request, response) => {
+  return User.find({})
+    .then((data) => {
+      response.status(200).send(data);
     })
-    .catch((error) => {
-      return res.status(500).send(error.message);
-    });
+    .catch((e) => response.status(500).send(e.message));
 };
 
-const getUser = (req, res) => {
-  const { user_id } = req.params;
-  User.findById(user_id)
+const getUser = (request, response) => {
+  const { user_id } = request.params;
+  return User.findById(user_id)
     .then((user) => {
-      return res.status(200).send(user);
+      response.status(200).send(user);
     })
-    .catch((error) => {
-      return res.status(500).send(error.message);
-    });
+    .catch((e) => response.status(500).send(e.message));
 };
 
-const createUser = (req, res) => {
-  const data = req.body;
-  User.create(data)
+const createUser = (request, response) => {
+  return User.create({ ...request.body })
     .then((user) => {
-      return res.status(201).send(user);
+      response.status(201).send(user);
     })
-    .catch((error) => {
-      return res.status(500).send(error.message);
-    });
+    .catch((e) => response.status(500).send(e.message));
 };
 
-const updateUser = (req, res) => {
-  const { user_id } = req.params;
-  const data = req.body;
-
-  User.findByIdAndUpdate(user_id, data, { new: true, runValidators: true })
+const updateUser = (request, response) => {
+  const { user_id } = request.params;
+  return User.findByIdAndUpdate(user_id, { ...request.body })
     .then((user) => {
-      return res.status(200).send(user);
+      response.status(200).send(user);
     })
-    .catch((error) => {
-      return res.status(500).send(error.message);
-    });
+    .catch((e) => response.status(500).send(e.message));
 };
 
-const deleteUser = (req, res) => {
-  const { user_id } = req.params;
-
-  User.findByIdAndDelete(user_id)
+const deleteUser = (request, response) => {
+  const { user_id } = request.params;
+  return User.findByIdAndDelete(user_id)
     .then((user) => {
-      return res.status(200).send(`Пользователь ${user.username} успешно удалён `);
+      response.status(200).send("Success");
     })
-    .catch((error) => {
-      return res.status(500).send(error.message);
-    });
+    .catch((e) => response.status(500).send(e.message));
 };
 
 module.exports = {

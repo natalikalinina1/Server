@@ -1,5 +1,5 @@
-const loggerOne = (req, res, next) => {
-  console.log(`Request to: ${req.originalUrl}`);
+const loggerOne = (request, response, next) => {
+  console.log(`Request to: ${request.originalUrl}`);
   next();
 };
 

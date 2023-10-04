@@ -1,51 +1,63 @@
 const User = require("../models/user");
-const Book = require("../models/book");
 
-const takeBook = async (req, res) => {
-  const { user_id, book_id } = req.params;
-
-  try {
-    const book = await Book.findById(book_id);
-    if (!book) {
-      return res.status(404).send("Книга не найдена");
-    }
-
-    const user = await User.findById(user_id);
-    if (!user) {
-      return res.status(404).send("Пользователь не найден");
-    }
-
-    User.findByIdAndUpdate(user_id, { $addToSet: { books: book_id } }, { new: true, runValidators: true }).then((user) => {
-      return res.status(200).send(`Книга успешно добавлена пользователю ${user.username}`);
+const getUserBooks = (request, response) => {
+  const { user_id } = request.params;
+  return User.findById(user_id)
+    .then((user) => {
+      if (!user) {
+        return response.status(404).send("Пользователь не найден");
+      }
+      const userBooks = user.borrowedBooks;
+      return response.status(200).json(userBooks);
+    })
+    .catch((error) => {
+      console.error(error);
+      response.status(500).json({ message: "Что-то пошло не так" });
     });
-  } catch (error) {
-    return res.status(500).send(error.message);
-  }
 };
 
-const returnBook = async (req, res) => {
-  const { user_id, book_id } = req.params;
-
-  try {
-    const book = await Book.findById(book_id);
-    if (!book) {
-      return res.status(404).send("Книга не найдена");
-    }
-
-    const user = await User.findById(user_id);
-    if (!user) {
-      return res.status(404).send("Пользователь не найден");
-    }
-
-    User.findByIdAndUpdate(user_id, { $pull: { books: book_id } }, { new: true, runValidators: true }).then((user) => {
-      return res.status(200).send(`Книга успешно удалена у пользователя ${user.username}`);
+const takeBook = (request, response) => {
+  const { user_id } = request.params;
+  const { book_id } = request.params;
+  return User.findByIdAndUpdate(
+    user_id,
+    { $addToSet: { borrowedBooks: book_id } },
+    { new: true, runValidators: true }
+  )
+    .then((user) => {
+      if (!user) {
+        return response.status(404).send("Пользователь не найден");
+      }
+      return response.status(201).json(user);
+    })
+    .catch((error) => {
+      console.error(error);
+      return response.status(500).json({ message: "Что-то пошло не так" });
     });
-  } catch (error) {
-    return res.status(500).send(error.message);
-  }
+};
+
+const returnBook = (request, response) => {
+  const { user_id } = request.params;
+  const { book_id } = request.params;
+  return User.findByIdAndUpdate(
+    user_id,
+    { $pull: { borrowedBooks: book_id } },
+    { new: true, runValidators: true }
+  )
+    .then((user) => {
+      if (!user) {
+        return response.status(404).send("Пользователь не найден");
+      }
+      return response.status(204).json(user);
+    })
+    .catch((error) => {
+      console.error(error);
+      return response.status(500).json({ message: "Что-то пошло не так" });
+    });
 };
 
 module.exports = {
+  getUserBooks,
   takeBook,
   returnBook,
 };
