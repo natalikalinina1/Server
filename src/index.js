@@ -1,39 +1,43 @@
-const http = require('http');
-const getUsers = require ('./modules/users');
+const express = require("express");
+const dotenv = require("dotenv");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const userRouter = require("./routes/users");
+const bookRouter = require("./routes/books");
+const actionRouter = require("./routes/actions");
+const loggerOne = require("./middlewares/loggerOne");
 
-const server = http.createServer((req, res) => {
-    const url = new URL(req.url, 'http://127.0.0.1');
-    const query = url.searchParams;
+dotenv.config();
 
-    if (query.toString() !== '') {
-        if (query.has('hello')) {
-            const name = query.get('hello');
-            if (name) {
-                res.writeHead(200, { 'Content-Type': 'text/plain' });
-                res.end(`Hello, ${name}!`);
-                return;
-            } else {
-                res.writeHead(400, { 'Content-Type': 'text/plain' });
-                res.end('Enter a name');
-                return;
-            }
-        } else {
-            res.writeHead(500);
-            res.end();
-            return;
-        }
-    }
+const {
+  PORT = 3000,
+  API_URL = "http://127.0.0.1",
+  MONGO_URL = "mongodb://127.0.0.1:27017/library",
+} = process.env;
 
-    if (url.pathname === '/users') {
-        res.writeHead(200,{'Content-Type': 'application/json'});
-        res.end(getUsers());
-        return;
-    }
+mongoose
+  .connect(MONGO_URL)
+  .then(() => {
+    console.log("Connected to MongoDb");
+  })
+  .catch((error) => console.error(error));
 
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Hello, World!');
-});
+const welcomeToLibrary = (request, response) => {
+  response.status(200);
+  response.send("Welcome to library!");
+};
 
-server.listen(3003, () => {
-    console.log('Сервер запущен по адресу http://127.0.0.1:3003/');
+const app = express();
+
+app.get("/", welcomeToLibrary);
+app.use(cors());
+app.use(loggerOne);
+app.use(bodyParser.json());
+app.use(userRouter);
+app.use(bookRouter);
+app.use(actionRouter);
+
+app.listen(PORT, () => {
+  console.log(`Сервер запущен по адресу ${API_URL}:${PORT}`);
 });
